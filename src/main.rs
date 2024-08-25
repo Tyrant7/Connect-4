@@ -79,7 +79,7 @@ impl Board {
         while let Some(token) = column.next_back() {
             if *token == 0 {
                 *token = self.side_to_move;
-                let y: i32 = (self.height - y).try_into().unwrap();
+                let y: i32 = (self.height - y - 1).try_into().unwrap();
                 let is_win = self.check_win(i32::from(*column_index), y);
                 self.side_to_move = if self.side_to_move == 1 { 2 } else { 1 };
                 return is_win;
@@ -123,13 +123,14 @@ impl Board {
                 }
             }
             if sum >= 3 {
-                return true; 
+                return true;
             }
         }
         false
     }
     fn print_state(&self) {
         for y in 0..self.height {
+            print!("{y}|");
             for x in 0..self.width {
                 let token = self.tokens[x as usize][y as usize]; 
                 let output = if token == 1 {
@@ -139,9 +140,14 @@ impl Board {
                 } else {
                     String::from(" ")
                 };
-                print!("|{output}{color_reset}");
+                print!("{output}{color_reset}|");
             }
-            println!("|");
+            println!();
         }
+        print!(" ");
+        for x in 0..self.width {
+            print!("|{x}");
+        }
+        println!("|");
     }
 }
