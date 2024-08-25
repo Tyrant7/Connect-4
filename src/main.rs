@@ -20,8 +20,9 @@ fn main() {
             continue;
         }
 
-        board.make_move(&input);
-        board.check_win();
+        if board.make_move(&input) {
+            println!("Player {} has won!", if board.side_to_move == 1 { 2 } else { 1 });
+        }
     }
 }
 
@@ -68,22 +69,63 @@ impl Board {
         }
         moves
     }
-    fn make_move(&mut self, column_index: &u8) {
+    fn make_move(&mut self, column_index: &u8) -> bool {
         let Some(column) = self.tokens.get_mut(*column_index as usize) else {
-            return;
+            return false;
         };
         let mut column = column.iter_mut();
+        let mut y = 0;
         while let Some(token) = column.next_back() {
             if *token == 0 {
                 *token = self.side_to_move;
+                let y: i32 = (self.height - y).try_into().unwrap();
+                let is_win = self.check_win(i32::from(*column_index), y);
                 self.side_to_move = if self.side_to_move == 1 { 2 } else { 1 };
-                return;
+                return is_win;
+            }
+            y += 1;
+        }
+        false
+    }
+    fn check_win(&mut self, last_x: i32, last_y: i32) -> bool {
+        // To detect a win, we're going to walk in each direction of the piece we just placed
+        // until hitting a token of a different type,
+        // and if we traverse more than 3 spaces over each direction + its opposite direction, 
+        // then we know that we've won
+        let directions = [
+            (-1, -1), 
+            (-1, 0), 
+            (-1, 1), 
+            (0, -1)];
+
+        for direction in directions {
+            let dir_and_invert_dir = [direction, (-direction.0, -direction.1)];
+            let mut sum = 0;
+
+            // Look forward, then invert the direction to look backward and take the sum
+            for direction in dir_and_invert_dir {
+                let mut x = last_x;
+                let mut y = last_y;
+                loop {
+                    x += direction.0;
+                    y += direction.1;
+                    let Some(column) = self.tokens.get(x as usize) else {
+                        break;
+                    };
+                    let Some(token) = column.get(y as usize) else {
+                        break;
+                    };
+                    if *token != self.side_to_move {
+                        break;
+                    }
+                    sum += 1;
+                }
+            }
+            if sum >= 3 {
+                return true; 
             }
         }
-    }
-    fn check_win(&self) -> u8 {
-        // TODO
-        0
+        false
     }
     fn print_state(&self) {
         for y in 0..self.height {
