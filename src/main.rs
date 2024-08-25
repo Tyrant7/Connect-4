@@ -52,6 +52,7 @@ struct Board {
     tokens: Vec<Vec<u8>>,
 }
 
+
 impl Board {
     fn new(width: u32, height: u32) -> Board {
         let tokens = vec![vec![0; height as usize]; width as usize];
@@ -99,18 +100,18 @@ impl Board {
         // until hitting a token of a different type,
         // and if we traverse more than 3 spaces over each direction + its opposite direction, 
         // then we know that we've won
-        let directions = [
+        let offsets = [
             (-1, -1), 
             (-1, 0), 
             (-1, 1), 
             (0, -1)];
 
-        for direction in directions {
-            let dir_and_invert_dir = [direction, (-direction.0, -direction.1)];
+        for offset in offsets {
+            let offset_and_inverse = [offset, (-offset.0, -offset.1)];
             let mut sum = 0;
 
             // Look forward, then invert the direction to look backward and take the sum
-            for direction in dir_and_invert_dir {
+            for direction in offset_and_inverse {
                 let mut x = last_x;
                 let mut y = last_y;
                 loop {
@@ -139,12 +140,10 @@ impl Board {
             print!("{y}|");
             for x in 0..self.width {
                 let token = self.tokens[x as usize][y as usize]; 
-                let output = if token == 1 {
-                    format!("{color_bright_yellow}o")
-                } else if token == 2 {
-                    format!("{color_bright_red}x")
-                } else {
-                    String::from(" ")
+                let output = match token {
+                    1 => format!("{color_bright_yellow}o"),
+                    2 => format!("{color_bright_red}x"),
+                    _ => String::from(" "),
                 };
                 print!("{output}{color_reset}|");
             }
