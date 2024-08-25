@@ -2,27 +2,34 @@ use std::io;
 use inline_colorization::*;
 
 fn main() {
-    let mut board = Board::new(9, 7);
+    println!("Welcome to Connect 4");
     loop {
-        board.print_state();
-
-        let input = get_input("Enter a column to place your token...");
-        let input = match input.parse() {
-            Ok(value) => value,
-            Err(_) => {
-                println!("Invalid column");
+        let _ = get_input("Press enter to begin a match...");
+        let mut board = Board::new(9, 7);
+        loop {
+            board.print_state();
+    
+            println!("Player {}'s turn!", board.side_to_move);
+            let input = get_input("Enter a column to place your token...");
+            let input = match input.parse() {
+                Ok(value) => value,
+                Err(_) => {
+                    println!("Invalid column");
+                    continue;
+                    0
+                }
+            };
+            println!("You entered '{}'", input);
+            if !board.gen_moves().contains(&input) {
+                println!("Not a valid move");
                 continue;
-                0
             }
-        };
-        println!("You entered {}", input);
-        if !board.gen_moves().contains(&input) {
-            println!("Not a valid move");
-            continue;
-        }
-
-        if board.make_move(&input) {
-            println!("Player {} has won!", if board.side_to_move == 1 { 2 } else { 1 });
+    
+            if board.make_move(&input) {
+                println!("Player {} has won!", if board.side_to_move == 1 { 2 } else { 1 });
+                board.print_state();
+                break;
+            }
         }
     }
 }
