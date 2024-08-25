@@ -1,4 +1,5 @@
 use std::io;
+use inline_colorization::*;
 
 fn main() {
     let mut board = Board::new(9, 7);
@@ -130,7 +131,15 @@ impl Board {
     fn print_state(&self) {
         for y in 0..self.height {
             for x in 0..self.width {
-                print!("| {} ", self.tokens[x as usize][y as usize]);
+                let token = self.tokens[x as usize][y as usize]; 
+                let output = if token == 1 {
+                    format!("{color_bright_yellow}o")
+                } else if token == 2 {
+                    format!("{color_bright_red}x")
+                } else {
+                    String::from(" ")
+                };
+                print!("|{output}{color_reset}");
             }
             println!("|");
         }
