@@ -9,7 +9,7 @@ fn main() {
         loop {
             board.print_state();
     
-            println!("Player {}'s turn!", board.side_to_move);
+            println!("Player {}'s turn!", board.active_player);
             let input = get_input("Enter a column to place your token...");
             let input = match input.parse() {
                 Ok(value) => value,
@@ -25,7 +25,7 @@ fn main() {
             }
     
             if board.make_move(&input) {
-                println!("Player {} has won!", if board.side_to_move == 1 { 2 } else { 1 });
+                println!("Player {} has won!", if board.active_player == 1 { 2 } else { 1 });
                 board.print_state();
                 break;
             }
@@ -43,23 +43,25 @@ fn get_input(prompt: &str) -> String {
 struct Board {
     width: u32,
     height: u32,
-    side_to_move: u8,
+    active_player: u8,
     // 2D representation of our board, where [x, y] is 
     // the token in the corresponding position and the token values
-    // 0 = vacant
-    // 1 = player 1
-    // 2 = player 2
-    tokens: Vec<Vec<u8>>,
+    tokens: Vec<Vec<Token>>,
 }
 
+#[derive(Clone)]
+enum Token {
+    Vacant,
+    Owned(u8),
+}
 
 impl Board {
     fn new(width: u32, height: u32) -> Board {
-        let tokens = vec![vec![0; height as usize]; width as usize];
+        let tokens = vec![vec![Token::Vacant; height as usize]; width as usize];
         Board {
             width,
             height,
-            side_to_move: 1,
+            active_player: 1,
             tokens,
         }
     }
@@ -68,9 +70,9 @@ impl Board {
         for (x, column) in self.tokens.iter().enumerate() {
             let mut column = column.iter();
             while let Some(token) = column.next_back() {
-                if *token > 0 {
+                let Token::Vacant = token else {
                     continue;
-                }
+                };
                 moves.push(x as u8);
                 break;
             }
@@ -84,11 +86,11 @@ impl Board {
         let mut column = column.iter_mut();
         let mut y = 0;
         while let Some(token) = column.next_back() {
-            if *token == 0 {
-                *token = self.side_to_move;
+            if let Token::Vacant = token {
+                *token = Token::Owned(self.active_player);
                 let y: i32 = (self.height - y - 1).try_into().unwrap();
                 let is_win = self.check_win(i32::from(*column_index), y);
-                self.side_to_move = if self.side_to_move == 1 { 2 } else { 1 };
+                self.active_player = if self.active_player == 1 { 2 } else { 1 };
                 return is_win;
             }
             y += 1;
@@ -123,10 +125,15 @@ impl Board {
                     let Some(token) = column.get(y as usize) else {
                         break;
                     };
-                    if *token != self.side_to_move {
-                        break;
+                    match token {
+                        Token::Vacant => break,
+                        Token::Owned(owner) => {
+                            if *owner != self.active_player {
+                                break;
+                            }
+                            sum += 1;
+                        }
                     }
-                    sum += 1;
                 }
             }
             if sum >= 3 {
@@ -139,10 +146,15 @@ impl Board {
         for y in 0..self.height {
             print!("{y}|");
             for x in 0..self.width {
-                let token = self.tokens[x as usize][y as usize]; 
+                let token = &self.tokens[x as usize][y as usize];
                 let output = match token {
-                    1 => format!("{color_bright_yellow}o"),
-                    2 => format!("{color_bright_red}x"),
+                    Token::Owned(owner) => {
+                        match owner {
+                            1 => format!("{color_bright_yellow}o"),
+                            2 => format!("{color_bright_red}x"),
+                            _ => String::from(" "),
+                        }
+                    },
                     _ => String::from(" "),
                 };
                 print!("{output}{color_reset}|");
