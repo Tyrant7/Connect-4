@@ -16,7 +16,6 @@ fn main() {
                 Err(_) => {
                     println!("Invalid column");
                     continue;
-                    0
                 }
             };
             println!("You entered '{}'", input);
