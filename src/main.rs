@@ -2,6 +2,7 @@ use std::io;
 use inline_colorization::*;
 
 const PLAYER_COUNT: u8 = 4;
+const CONNECT_AMOUNT: u8 = 3;
 
 fn main() {    
     println!("Welcome to Connect 4");
@@ -142,7 +143,7 @@ impl Board {
                     }
                 }
             }
-            if sum >= 3 {
+            if sum >= CONNECT_AMOUNT - 1 {
                 return true;
             }
         }
