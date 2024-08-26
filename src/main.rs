@@ -1,7 +1,9 @@
 use std::io;
 use inline_colorization::*;
 
-fn main() {
+const PLAYER_COUNT: u8 = 4;
+
+fn main() {    
     println!("Welcome to Connect 4");
     loop {
         let _ = get_input("Press enter to begin a match...");
@@ -25,7 +27,7 @@ fn main() {
             }
     
             if board.make_move(&input) {
-                let winner = if board.active_player == 1 { 3 } else { board.active_player - 1 };
+                let winner = if board.active_player == 1 { PLAYER_COUNT } else { board.active_player - 1 };
                 println!("Player {} has won!", winner);
                 board.print_state();
                 break;
@@ -92,7 +94,7 @@ impl Board {
                 let y: i32 = (self.height - y - 1).try_into().unwrap();
                 let is_win = self.check_win(i32::from(*column_index), y);
                 self.active_player += 1;
-                if self.active_player > 3 {
+                if self.active_player > PLAYER_COUNT {
                     self.active_player = 1;
                 }
                 return is_win;
@@ -157,6 +159,7 @@ impl Board {
                             1 => format!("{color_bright_yellow}o"),
                             2 => format!("{color_bright_red}x"),
                             3 => format!("{color_bright_blue}a"),
+                            4 => format!("{color_bright_green}n"),
                             _ => String::from(" "),
                         }
                     },
