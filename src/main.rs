@@ -5,7 +5,7 @@ fn main() {
     println!("Welcome to Connect 4");
     loop {
         let _ = get_input("Press enter to begin a match...");
-        let mut board = Board::new(9, 7);
+        let mut board = Board::new(13, 11);
         loop {
             board.print_state();
     
@@ -25,7 +25,8 @@ fn main() {
             }
     
             if board.make_move(&input) {
-                println!("Player {} has won!", if board.active_player == 1 { 2 } else { 1 });
+                let winner = if board.active_player == 1 { 3 } else { board.active_player - 1 };
+                println!("Player {} has won!", winner);
                 board.print_state();
                 break;
             }
@@ -90,7 +91,10 @@ impl Board {
                 *token = Token::Owned(self.active_player);
                 let y: i32 = (self.height - y - 1).try_into().unwrap();
                 let is_win = self.check_win(i32::from(*column_index), y);
-                self.active_player = if self.active_player == 1 { 2 } else { 1 };
+                self.active_player += 1;
+                if self.active_player > 3 {
+                    self.active_player = 1;
+                }
                 return is_win;
             }
             y += 1;
@@ -144,7 +148,7 @@ impl Board {
     }
     fn print_state(&self) {
         for y in 0..self.height {
-            print!("{y}|");
+            print!("{: >2}|", y);
             for x in 0..self.width {
                 let token = &self.tokens[x as usize][y as usize];
                 let output = match token {
@@ -152,18 +156,19 @@ impl Board {
                         match owner {
                             1 => format!("{color_bright_yellow}o"),
                             2 => format!("{color_bright_red}x"),
+                            3 => format!("{color_bright_blue}a"),
                             _ => String::from(" "),
                         }
                     },
                     _ => String::from(" "),
                 };
-                print!("{output}{color_reset}|");
+                print!(" {output}{color_reset} |");
             }
             println!();
         }
-        print!(" ");
+        print!("  ");
         for x in 0..self.width {
-            print!("|{x}");
+            print!("|{: ^3}", x);
         }
         println!("|");
     }
