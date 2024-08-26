@@ -5,7 +5,7 @@ const PLAYER_COUNT: u8 = 4;
 const CONNECT_AMOUNT: u8 = 3;
 
 fn main() {    
-    println!("Welcome to Connect 4");
+    println!("Welcome to Connect {CONNECT_AMOUNT}");
     loop {
         let _ = get_input("Press enter to begin a match...");
         let mut board = Board::new(13, 11);
